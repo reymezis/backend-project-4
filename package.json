@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Page loader project",
   "main": "index.js",
+  "bin": {
+    "page-loader": "bin/page-loader.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,5 +19,14 @@
   "bugs": {
     "url": "https://github.com/reymezis/backend-project-4/issues"
   },
-  "homepage": "https://github.com/reymezis/backend-project-4#readme"
+  "homepage": "https://github.com/reymezis/backend-project-4#readme",
+  "dependencies": {
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.44.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jest": "^27.2.2"
+  }
 }
