@@ -20,16 +20,11 @@ beforeEach(async () => {
   tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
 });
 
-test('fetchData', async () => {
+test('download web page', async () => {
   nock('https://ru.hexlet.io')
     .get('/courses')
     .reply(200, expected);
   const filePath = await downloadPage(url, tempDir);
-  // console.log('filePath', filePath);
-  // const absolutePath = path.resolve(filePath);
-  // console.log('absolutePath', absolutePath);
-  // const files = await fs.readdir(tempDir);
-  // console.log('files', files);
   const result = await fs.readFile(filePath, 'utf-8');
   expect(result).toEqual(expected);
 });
