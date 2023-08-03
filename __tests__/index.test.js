@@ -23,6 +23,9 @@ const expectedFileName = getHtmlFileName(url);
 const originHtmlFile = await fs.readFile(getFixturePath('origin.html'), 'utf-8');
 const expected = await fs.readFile(getFixturePath('ru-hexlet-io-courses.html'), 'utf-8');
 const fixtureImgPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png');
+const fixtureCssPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-assets-application.css');
+const fixtureJsPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-packs-js-runtime.js');
+const fixtureHtmlPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-courses.html');
 let tempDir;
 
 beforeEach(async () => {
@@ -31,7 +34,13 @@ beforeEach(async () => {
     .get('/courses')
     .reply(200, originHtmlFile)
     .get('/assets/professions/nodejs.png')
-    .replyWithFile(200, fixtureImgPath);
+    .replyWithFile(200, fixtureImgPath)
+    .get('/assets/application.css')
+    .replyWithFile(200, fixtureCssPath)
+    .get('/courses')
+    .replyWithFile(200, fixtureHtmlPath)
+    .get('/packs/js/runtime.js')
+    .replyWithFile(200, fixtureJsPath);
 });
 
 test('download web page', async () => {
@@ -51,4 +60,52 @@ test('created images folder', async () => {
   const filePath = getAbsolutePath(path.join(tempDir, getFolderName(resultPath)));
   const stat = await fs.stat(filePath);
   expect(stat.isDirectory()).toBe(true);
+});
+
+test('created css file', async () => {
+  const expectedCssFileName = path.basename(fixtureCssPath);
+  const resultPath = await downloadPage(url, tempDir);
+  const filePath = getAbsolutePath(
+    path.join(tempDir, getFolderName(resultPath), expectedCssFileName),
+  );
+  const resultCssFileName = path.basename(filePath);
+  const stat = await fs.stat(filePath);
+  const resultCssFile = await fs.readFile(filePath, 'utf-8');
+  const expectedCssFile = await fs.readFile(fixtureCssPath, 'utf-8');
+
+  expect(stat.isFile()).toBe(true);
+  expect(resultCssFileName).toEqual(expectedCssFileName);
+  expect(resultCssFile).toEqual(expectedCssFile);
+});
+
+test('created js file', async () => {
+  const expectedJsFileName = path.basename(fixtureJsPath);
+  const resultPath = await downloadPage(url, tempDir);
+  const filePath = getAbsolutePath(
+    path.join(tempDir, getFolderName(resultPath), expectedJsFileName),
+  );
+  const resultJsFileName = path.basename(filePath);
+  const stat = await fs.stat(filePath);
+  const resultJsFile = await fs.readFile(filePath, 'utf-8');
+  const expectedJsFile = await fs.readFile(fixtureJsPath, 'utf-8');
+
+  expect(stat.isFile()).toBe(true);
+  expect(resultJsFileName).toEqual(expectedJsFileName);
+  expect(resultJsFile).toEqual(expectedJsFile);
+});
+
+test('created html file', async () => {
+  const expectedHtmlFileName = path.basename(fixtureHtmlPath);
+  const resultPath = await downloadPage(url, tempDir);
+  const filePath = getAbsolutePath(
+    path.join(tempDir, getFolderName(resultPath), expectedHtmlFileName),
+  );
+  const resultHtmlFileName = path.basename(filePath);
+  const stat = await fs.stat(filePath);
+  const resultHtmlFile = await fs.readFile(filePath, 'utf-8');
+  const expectedHtmlFile = await fs.readFile(fixtureHtmlPath, 'utf-8');
+
+  expect(stat.isFile()).toBe(true);
+  expect(resultHtmlFileName).toEqual(expectedHtmlFileName);
+  expect(resultHtmlFile).toEqual(expectedHtmlFile);
 });
