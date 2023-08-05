@@ -3,6 +3,10 @@ import path from 'path';
 import prettier from 'prettier';
 import { promises as fs } from 'fs';
 import * as cheerio from 'cheerio';
+import debug from 'debug';
+import 'axios-debug-log';
+
+const logPageLoader = debug('page-loader');
 
 const resourcesMap = new Map([
   [['img', 'src'], []],
@@ -44,8 +48,10 @@ export const downloadPage = async (url, dir) => {
   const folderName = getFolderName(absolutePath);
   const pathFolder = getAbsolutePath(path.join(dir, folderName));
   let htmlResult;
+  logPageLoader(`execute axios http request to ${url}`);
   return axios.get(url)
     .then(({ data }) => {
+      logPageLoader('start using cherio');
       const $ = cheerio.load(data);
       htmlResult = $;
       resourcesMap.forEach((value, key) => {
