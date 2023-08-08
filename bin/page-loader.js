@@ -10,7 +10,11 @@ program
   .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
   .action((url) => {
     downloadPage(url, program.opts().output)
-      .then((result) => console.log(result));
+      .then((result) => console.log(result))
+      .catch((e) => {
+        console.error(`Error ${e.message}`);
+        process.exit(1);
+      });
   });
 
 program.parse();

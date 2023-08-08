@@ -44,9 +44,10 @@ export const getAbsolutePath = (pathFile) => path.resolve(pathFile);
 export const downloadPage = async (url, dir) => {
   const sourceUrl = new URL(url);
   const htmlFileName = getHtmlFileName(url);
-  const absolutePath = getAbsolutePath(path.join(dir, htmlFileName));
-  const folderName = getFolderName(absolutePath);
-  const pathFolder = getAbsolutePath(path.join(dir, folderName));
+  const loadDirectory = getAbsolutePath(path.join(dir));
+  const absolutePath = getAbsolutePath(path.join(loadDirectory, htmlFileName));
+  const assetsFolderName = getFolderName(absolutePath);
+  const assetsFolderPath = getAbsolutePath(path.join(loadDirectory, assetsFolderName));
   let htmlResult;
   logPageLoader(`execute axios http request to ${url}`);
   return axios.get(url)
@@ -59,9 +60,16 @@ export const downloadPage = async (url, dir) => {
         resourcesMap.set(key, getLocalAssets($, tag, attr, sourceUrl));
       });
     })
-    .catch((e) => console.log('local assets process error', e))
-    .then(() => fs.stat(pathFolder))
-    .catch(() => fs.mkdir(pathFolder))
+    .catch((e) => {
+      if (e.response.status !== 200) {
+        throw new Error(`Request ${url} failed, status code: ${e.response.status}`);
+      }
+    })
+    .then(() => fs.access(loadDirectory, fs.constants.W_OK)
+      .catch(() => {
+        throw new Error(`Directory: ${dir} not exists or has no access`);
+      }))
+    .then(() => fs.mkdir(assetsFolderPath))
     .then(() => {
       const assetsPromises = [];
       resourcesMap.forEach((value, key) => {
@@ -70,28 +78,23 @@ export const downloadPage = async (url, dir) => {
           const src = htmlResult(this).attr(source);
           const assetUrl = new URL(src, sourceUrl.origin);
           const downloadAssetUrl = `${assetUrl.origin}${assetUrl.pathname}`;
-          const localAssetLink = `${folderName}/${sourceUrl.hostname.replace(/\./g, '-')}${getAssetFileName(assetUrl)}`;
-          const absoluteAssetPath = getAbsolutePath(path.join(dir, localAssetLink));
+          const localAssetLink = `${assetsFolderName}/${sourceUrl.hostname.replace(/\./g, '-')}${getAssetFileName(assetUrl)}`;
+          const absoluteAssetPath = getAbsolutePath(path.join(loadDirectory, localAssetLink));
           assetsPromises.push(axios({
             method: 'get',
             url: downloadAssetUrl,
             responseType: tag === 'img' ? 'stream' : 'json',
           }).then((response) => {
-            fs.writeFile(absoluteAssetPath, response.data)
-              .catch((error) => console.log('error write asset file', error));
-          }).catch((error) => console.log('axios error asset file', error)));
+            fs.writeFile(absoluteAssetPath, response.data);
+          }));
           htmlResult(this).attr(source, localAssetLink);
         });
       });
       return assetsPromises;
     })
-    .catch((error) => console.log('error process local links', error))
     .then((data) => Promise.all(data))
-    .catch((error) => console.log('error get all assets', error))
     .then(() => htmlResult.html())
     .then((data) => prettier.format(data, { parser: 'html' }))
-    .catch((error) => console.log('error prettier', error))
     .then((formatedHtml) => fs.writeFile(absolutePath, formatedHtml))
-    .catch((error) => console.log('error write main html file', error))
     .then(() => absolutePath);
 };
