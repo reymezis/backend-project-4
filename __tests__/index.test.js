@@ -109,3 +109,24 @@ test('created html file', async () => {
   expect(resultHtmlFileName).toEqual(expectedHtmlFileName);
   expect(resultHtmlFile).toEqual(expectedHtmlFile);
 });
+
+test('error with wrong url', async () => {
+  nock('https://ru.hexlet.io')
+    .get('/404')
+    .reply(404, '');
+  const badUrl = 'https://ru.hexlet.io/404';
+  await expect(downloadPage(badUrl, tempDir))
+    .rejects.toThrow(`Request ${badUrl} failed, status code: 404`);
+});
+
+test('access directory error', async () => {
+  const notAccessiblePath = '/var/backups';
+  await expect(downloadPage(url, notAccessiblePath))
+    .rejects.toThrow(`Directory: ${notAccessiblePath} not exists or has no access`);
+});
+
+test('not exists directory', async () => {
+  const notExistDir = './test';
+  await expect(downloadPage(url, notExistDir))
+    .rejects.toThrow(`Directory: ${notExistDir} not exists or has no access`);
+});
