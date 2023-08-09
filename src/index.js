@@ -23,7 +23,7 @@ export const getHtmlFileName = (url) => {
 const getLocalAssets = (html, tag, sourceAttr, url) => html(tag).filter(function filterAssets() {
   if (html(this).attr(sourceAttr)) {
     return html(this).attr(sourceAttr).startsWith(url.origin)
-    || html(this).attr(sourceAttr).startsWith('/assets')
+    || html(this).attr(sourceAttr).startsWith('/')
     || html(this).attr(sourceAttr).startsWith(url.pathname);
   }
 
