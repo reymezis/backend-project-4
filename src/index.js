@@ -72,7 +72,6 @@ export const downloadPage = async (url, dir = process.cwd()) => {
       }))
     .then(() => fs.mkdir(assetsFolderPath))
     .then(() => {
-      const assetsPromises = [];
       const tasks = [];
       resourcesMap.forEach((value, key) => {
         const [, source] = key;
@@ -89,7 +88,7 @@ export const downloadPage = async (url, dir = process.cwd()) => {
           }).then((response) => {
             fs.writeFile(absoluteAssetPath, response.data);
           });
-          assetsPromises.push(promise);
+
           tasks.push({
             title: downloadAssetUrl,
             task: () => promise,
@@ -97,10 +96,8 @@ export const downloadPage = async (url, dir = process.cwd()) => {
           htmlResult(this).attr(source, localAssetLink);
         });
       });
-      // return assetsPromises;
       return new Listr(tasks, { concurrent: true });
     })
-    // .then((data) => Promise.all(data))
     .then((listr) => listr.run())
     .then(() => htmlResult.html())
     .then((data) => prettier.format(data, { parser: 'html' }))
