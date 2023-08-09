@@ -3,8 +3,8 @@
 import os from 'os';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import nock from 'nock';
 import { promises as fs } from 'fs';
+import nock from 'nock';
 import {
   test, expect, beforeEach, beforeAll,
 } from '@jest/globals';
