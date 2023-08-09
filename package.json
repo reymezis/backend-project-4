@@ -25,7 +25,8 @@
     "axios-debug-log": "^1.0.0",
     "cheerio": "^1.0.0-rc.12",
     "commander": "^11.0.0",
-    "debug": "^4.3.4"
+    "debug": "^4.3.4",
+    "listr": "^0.14.3"
   },
   "devDependencies": {
     "@jest/globals": "^29.6.1",

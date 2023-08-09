@@ -3,6 +3,7 @@ import path from 'path';
 import prettier from 'prettier';
 import { promises as fs } from 'fs';
 import * as cheerio from 'cheerio';
+import Listr from 'listr';
 import debug from 'debug';
 import 'axios-debug-log';
 
@@ -41,7 +42,7 @@ export const getFolderName = (pathFile) => {
 
 export const getAbsolutePath = (pathFile) => path.resolve(pathFile);
 
-export const downloadPage = async (url, dir) => {
+export const downloadPage = async (url, dir = process.cwd()) => {
   const sourceUrl = new URL(url);
   const htmlFileName = getHtmlFileName(url);
   const loadDirectory = getAbsolutePath(path.join(dir));
@@ -72,27 +73,35 @@ export const downloadPage = async (url, dir) => {
     .then(() => fs.mkdir(assetsFolderPath))
     .then(() => {
       const assetsPromises = [];
+      const tasks = [];
       resourcesMap.forEach((value, key) => {
-        const [tag, source] = key;
+        const [, source] = key;
         value.each(function processTag() {
           const src = htmlResult(this).attr(source);
           const assetUrl = new URL(src, sourceUrl.origin);
           const downloadAssetUrl = `${assetUrl.origin}${assetUrl.pathname}`;
           const localAssetLink = `${assetsFolderName}/${sourceUrl.hostname.replace(/\./g, '-')}${getAssetFileName(assetUrl)}`;
           const absoluteAssetPath = getAbsolutePath(path.join(loadDirectory, localAssetLink));
-          assetsPromises.push(axios({
+          const promise = axios({
             method: 'get',
             url: downloadAssetUrl,
-            responseType: tag === 'img' ? 'stream' : 'json',
+            responseType: 'arraybuffer',
           }).then((response) => {
             fs.writeFile(absoluteAssetPath, response.data);
-          }));
+          });
+          assetsPromises.push(promise);
+          tasks.push({
+            title: downloadAssetUrl,
+            task: () => promise,
+          });
           htmlResult(this).attr(source, localAssetLink);
         });
       });
-      return assetsPromises;
+      // return assetsPromises;
+      return new Listr(tasks, { concurrent: true });
     })
-    .then((data) => Promise.all(data))
+    // .then((data) => Promise.all(data))
+    .then((listr) => listr.run())
     .then(() => htmlResult.html())
     .then((data) => prettier.format(data, { parser: 'html' }))
     .then((formatedHtml) => fs.writeFile(absolutePath, formatedHtml))
