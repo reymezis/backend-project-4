@@ -104,3 +104,5 @@ export const downloadPage = async (url, dir = process.cwd()) => {
     .then((formatedHtml) => fs.writeFile(absolutePath, formatedHtml))
     .then(() => absolutePath);
 };
+
+export default downloadPage;
