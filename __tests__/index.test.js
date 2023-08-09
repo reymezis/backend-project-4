@@ -6,7 +6,7 @@ import path from 'path';
 import nock from 'nock';
 import { promises as fs } from 'fs';
 import {
-  test, expect, beforeEach,
+  test, expect, beforeEach, beforeAll,
 } from '@jest/globals';
 import {
   getHtmlFileName, downloadPage, getFolderName, getAbsolutePath,
@@ -20,13 +20,18 @@ nock.disableNetConnect();
 
 const url = 'https://ru.hexlet.io/courses';
 const expectedFileName = getHtmlFileName(url);
-const originHtmlFile = await fs.readFile(getFixturePath('origin.html'), 'utf-8');
-const expected = await fs.readFile(getFixturePath('ru-hexlet-io-courses.html'), 'utf-8');
 const fixtureImgPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png');
 const fixtureCssPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-assets-application.css');
 const fixtureJsPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-packs-js-runtime.js');
 const fixtureHtmlPath = getFixturePath('ru-hexlet-io-courses_files/ru-hexlet-io-courses.html');
 let tempDir;
+let originHtmlFile;
+let expected;
+
+beforeAll(async () => {
+  originHtmlFile = await fs.readFile(getFixturePath('origin.html'), 'utf-8');
+  expected = await fs.readFile(getFixturePath('ru-hexlet-io-courses.html'), 'utf-8');
+});
 
 beforeEach(async () => {
   tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));

@@ -1,7 +1,7 @@
-import axios from 'axios';
 import path from 'path';
-import prettier from 'prettier';
 import { promises as fs } from 'fs';
+import axios from 'axios';
+import prettier from 'prettier';
 import * as cheerio from 'cheerio';
 import Listr from 'listr';
 import debug from 'debug';
