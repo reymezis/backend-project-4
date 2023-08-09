@@ -66,7 +66,7 @@ export const downloadPage = async (url, dir = process.cwd()) => {
         throw new Error(`Request ${url} failed, status code: ${e.response.status}`);
       }
     })
-    .then(() => fs.access(loadDirectory, fs.constants.W_OK)
+    .then(() => fs.opendir(loadDirectory)
       .catch(() => {
         throw new Error(`Directory: ${dir} not exists or has no access`);
       }))
